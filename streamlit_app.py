@@ -1,40 +1,68 @@
-import altair as alt
-import numpy as np
-import pandas as pd
+# Object detection web app with YOLOv8, OpenCV, Streamlit
+import cv2
 import streamlit as st
+from ultralytics import YOLO
 
-"""
-# Welcome to Streamlit!
+def app():
+    st.header("Object Detection App")
+    st.subheader("Built using YOLOv8 and Streamlit")
+    st.write("Have Fun!")
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+    model = YOLO('yolov8n.pt')
+    supported_objects = list(model.names.values())
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+    with st.form("my_form"):
+        uploaded_file = st.file_uploader("Upload video", accept_multiple_files=False, type=['mp4'])
+        selected_objects = st.multiselect('Choose objects to detect', supported_objects, default=['person'])
+        min_confidence = st.slider('Confidence score', 0.0, 1.0)
+        st.form_submit_button(label="Submit")
 
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
+    if uploaded_file is not None:
+        input_path = uploaded_file.name
+        file_binary = uploaded_file.read()
 
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
+        with open(input_path, "wb") as temp_file:
+            temp_file.write(file_binary)
+        
+        video_stream = cv2.VideoCapture(input_path)
+        
+        width = int(video_stream.get(cv2.CAP_PROP_FRAME_WIDTH)) 
+        height = int(video_stream.get(cv2.CAP_PROP_FRAME_HEIGHT)) 
+        fourcc = cv2.VideoWriter_fourcc(*'h264') 
+        fps = int(video_stream.get(cv2.CAP_PROP_FPS)) 
+        output_path = input_path.split('.')[0] + '_output.mp4' 
+        out_video = cv2.VideoWriter(output_path, int(fourcc), fps, (width, height))
 
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
+        with st.spinner("Detecting objects in video..."):
+            while True:
+                ret, frame = video_stream.read()
+                if not ret:
+                    break
 
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
+                result = model(frame)
+                
+                for detection in result[0].boxes.data:
+                    x0, y0 = (int(detection[0]), int(detection[1]))
+                    x1, y1 = (int(detection[2]), int(detection[3]))
+                    score = round(float(detection[4]), 2)
+                    object_class = int(detection[5])
+                    object_name = model.names[object_class]
+                    label = f'{object_name} {score}'
 
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+                    if object_name in selected_objects and score > min_confidence:
+                        cv2.rectangle(frame, (x0, y0), (x1, y1), (255, 0, 0), 2)
+                        cv2.putText(frame, label, (x0, y0 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+
+                detections = result[0].verbose()
+                cv2.putText(frame, detections, (10, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  
+                out_video.write(frame)
+                        
+            video_stream.release()
+            out_video.release()
+        
+        st.video(output_path)
+
+if __name__ == "__main__":
+    app()
