@@ -3,6 +3,8 @@ import cv2
 import streamlit as st
 from ultralytics import YOLO
 import tempfile
+import subprocess
+
 
 def app():
     st.header("Object Detection App")
@@ -29,7 +31,7 @@ def app():
         
         width = int(video_stream.get(cv2.CAP_PROP_FRAME_WIDTH)) 
         height = int(video_stream.get(cv2.CAP_PROP_FRAME_HEIGHT)) 
-        fourcc = cv2.VideoWriter_fourcc(*'avc1') 
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
         fps = int(video_stream.get(cv2.CAP_PROP_FPS)) 
         outputfile = tempfile.NamedTemporaryFile(prefix=input_path.split('.')[-1], suffix='_output.mp4')
         out_video = cv2.VideoWriter(outputfile.name, int(fourcc), fps, (width, height))
@@ -63,7 +65,10 @@ def app():
             video_stream.release()
             out_video.release()
         
-        st.video(outputfile.name)
+        finaloutputfile = tempfile.NamedTemporaryFile(prefix=input_path.split('.')[-1], suffix='_output_final.mp4')
+        subprocess.call(args=f"ffmpeg -y -i {outputfile.name} -c:v libx264 {finaloutputfile.name}".split(" "))
+    
+        st.video(finaloutputfile.name)
 
 if __name__ == "__main__":
     app()
