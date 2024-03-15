@@ -2,6 +2,7 @@
 import cv2
 import streamlit as st
 from ultralytics import YOLO
+import tempfile
 
 def app():
     st.header("Object Detection App")
@@ -30,8 +31,8 @@ def app():
         height = int(video_stream.get(cv2.CAP_PROP_FRAME_HEIGHT)) 
         fourcc = cv2.VideoWriter_fourcc(*'h264') 
         fps = int(video_stream.get(cv2.CAP_PROP_FPS)) 
-        output_path = input_path.split('.')[0] + '_output.mp4' 
-        out_video = cv2.VideoWriter(output_path, int(fourcc), fps, (width, height))
+        outputfile = tempfile.NamedTemporaryFile(prefix=input_path.split('.')[-1], suffix='_output.mp4')
+        out_video = cv2.VideoWriter(outputfile.name, int(fourcc), fps, (width, height))
 
         with st.spinner("Detecting objects in video..."):
             while True:
@@ -62,7 +63,7 @@ def app():
             video_stream.release()
             out_video.release()
         
-        st.video(output_path)
+        st.video(outputfile.name)
 
 if __name__ == "__main__":
     app()
