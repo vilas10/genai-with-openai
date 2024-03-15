@@ -42,7 +42,7 @@ def app():
                 if not ret:
                     break
 
-                result = model(frame)
+                result = model(frame, verbose=False)
                 
                 for detection in result[0].boxes.data:
                     x0, y0 = (int(detection[0]), int(detection[1]))
