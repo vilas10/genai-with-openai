@@ -29,7 +29,7 @@ def app():
         
         width = int(video_stream.get(cv2.CAP_PROP_FRAME_WIDTH)) 
         height = int(video_stream.get(cv2.CAP_PROP_FRAME_HEIGHT)) 
-        fourcc = cv2.VideoWriter_fourcc(*'h264') 
+        fourcc = cv2.VideoWriter_fourcc(*'X264') 
         fps = int(video_stream.get(cv2.CAP_PROP_FPS)) 
         outputfile = tempfile.NamedTemporaryFile(prefix=input_path.split('.')[-1], suffix='_output.mp4')
         out_video = cv2.VideoWriter(outputfile.name, int(fourcc), fps, (width, height))
