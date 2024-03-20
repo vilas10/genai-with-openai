@@ -1,4 +1,6 @@
 streamlit
-opencv-python-headless
-ultralytics
-ffmpeg-python
+openai
+pandas
+requests
+tiktoken
+pypdf
