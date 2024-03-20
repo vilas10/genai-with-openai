@@ -1,15 +1,7 @@
 # GenAI demo with OpenAI integration
 import streamlit as st
-import tempfile
 import openai
-import pandas as pd
-import requests
-import datetime
-import pprint
-import tiktoken
-from pypdf import PdfReader
 import os
-from matplotlib import pyplot, image
 
 client = openai.OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
