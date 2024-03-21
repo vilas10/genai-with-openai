@@ -3,7 +3,7 @@ import streamlit as st
 import openai
 import os
 
-client = openai.OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+openai_client = openai.OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
 def generate_email(review, chat_transcript, postfix):
     with st.spinner("Generating email response..."):
@@ -13,14 +13,12 @@ def generate_email(review, chat_transcript, postfix):
         chat_history = chat_transcript.copy()
         chat_history.append({"role": "user", "content": review + postfix})
 
-        reply = client.chat.completions.create(
+        reply = openai_client.chat.completions.create(
             model="gpt-3.5-turbo-1106",
             messages=chat_history
         )
 
         return reply.choices[0].message.content
-    
-
 
 def app():
     st.header("GenAI Demo")
@@ -36,8 +34,12 @@ def app():
         is_submitted = st.form_submit_button(label="Submit")
 
     if is_submitted:
-        output_email = generate_email(review, chat_transcript, postfix)
-        st.write(output_email)
+        try:
+            output_email = generate_email(review, chat_transcript, postfix)
+            st.write(output_email)
+        except:
+            st.warning("Thanks for your interest in GenAI Demo. The demo period has ended.")
+
         
 
 if __name__ == "__main__":
