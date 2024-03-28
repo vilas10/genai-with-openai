@@ -133,7 +133,7 @@ def app():
     # Generate email response to customer review.
     with review_tab:
         st.subheader("Reply to customer review!")
-        postfix = "\n\nWrite an email to customers to address the issues put forward in the above review, thank them if they write good comments, and encourage them to make further purchases. Do not give promotion codes or discounts to the customers. Do not recommend other products. Keep the emails short."
+        postfix = "\n\nWrite an email to customers to address the issues put forward in the above review, thank them if they write good comments, and encourage them to make further purchases. Do not give promotion codes or discounts to the customers. Do not recommend other products. Keep the emails short. If you get a bad comment, try to reach out to use for any questions."
         st.write(postfix)
         generate_response_to_customer_review(postfix)
 
